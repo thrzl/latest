@@ -30,8 +30,22 @@ const homepage = `
 
 `;
 
+const cache = caches.default;
+
 function newError(text: string, status: number) {
 	return new Response(text, { status: status });
+}
+
+async function getRelease(url: string) {
+	let releaseData = await cache.match(url);
+	if (releaseData) return releaseData;
+	const res = await fetch(url, {
+		headers: { 'User-Agent': 'thrzl/latest 0.1.0' },
+	});
+	if (!url.endsWith('latest') && res.status === 200) {
+		await cache.put(url, res.clone());
+	}
+	return res;
 }
 
 export default {
@@ -50,9 +64,7 @@ export default {
 		if (query === null || query.length === 0) {
 			return newError("you didn't set a query", 400);
 		}
-		const res = await fetch(`http://api.github.com/repos/${repo}/releases/${versionString}`, {
-			headers: { 'User-Agent': 'thrzl/latest 0.1.0' },
-		});
+		const res = await getRelease(`http://api.github.com/repos/${repo}/releases/${versionString}`);
 		if (res.status === 404) {
 			return newError(`failed to find that release`, 404);
 		}
