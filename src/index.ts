@@ -42,7 +42,7 @@ async function getRelease(url: string) {
 	const res = await fetch(url, {
 		headers: { 'User-Agent': 'thrzl/latest 0.1.0' },
 	});
-	if (!url.endsWith('latest') && res.status === 200) {
+	if (!url.endsWith('latest') && [200, 301, 302].includes(res.status)) {
 		await cache.put(url, res.clone());
 	}
 	return res;
@@ -68,7 +68,7 @@ export default {
 		if (res.status === 404) {
 			return newError(`failed to find that release`, 404);
 		}
-		if (res.status !== 200) {
+		if ([200, 301, 302].includes(res.status)) {
 			return newError(`sum went wrong gangalang: ${res.statusText}`, res.status);
 		}
 		const data: { assets: any[] } = await res.json();
