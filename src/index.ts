@@ -64,7 +64,7 @@ export default {
 		if (query === null || query.length === 0) {
 			return newError("you didn't set a query", 400);
 		}
-		const res = await getRelease(`http://api.github.com/repos/${repo}/releases/${versionString}`);
+		const res = await getRelease(`https://api.github.com/repos/${repo}/releases/${versionString}`);
 		if (res.status === 404) {
 			return newError(`failed to find that release`, 404);
 		}
