@@ -68,7 +68,7 @@ export default {
 		if (res.status === 404) {
 			return newError(`failed to find that release`, 404);
 		}
-		if ([200, 301, 302].includes(res.status)) {
+		if (![200, 301, 302].includes(res.status)) {
 			return newError(`sum went wrong gangalang: ${res.statusText}`, res.status);
 		}
 		const data: { assets: any[] } = await res.json();
