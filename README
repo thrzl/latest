@@ -1,0 +1,23 @@
+            thrzl/latest
+
+this is a small cloudflare worker that
+will redirect to a release asset matching
+a query
+
+you can use it like this:
+
+/{user}/{repo}?q=...
+
+where the `q` parameter is a substring to
+search for. for example:
+
+/thrzl/chiffrage?q=setup.exe
+
+an optional `v` parameter can be used to
+specify a version. for example:
+
+/thrzl/chiffrage?q=setup.exe&v=v1.6.0
+
+will match any release asset in release `v1.6.0` that contains
+`setup.exe`, which in my case would match
+`chiffrage_vX.X.X_setup.exe\
