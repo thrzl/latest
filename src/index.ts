@@ -19,11 +19,20 @@ const homepage = `
 
 	/thrzl/chiffrage?q=setup.exe
 
-	will match any release asset that contains
+	an optional \`v\` parameter can be used to
+	specify a version. for example:
+
+	/thrzl/chiffrage?q=setup.exe&v=v1.6.0
+
+	will match any release asset in release \`v1.6.0\` that contains
 	\`setup.exe\`, which in my case would match
 	\`chiffrage_vX.X.X_setup.exe\`
 
 `;
+
+function newError(text: string, status: number) {
+	return new Response(text, { status: status });
+}
 
 export default {
 	async fetch(request, env, ctx): Promise<Response> {
@@ -33,15 +42,22 @@ export default {
 		}
 		const repo = url.pathname.slice(1);
 		const query = url.searchParams.get('q');
+		const version = url.searchParams.get('v');
+		const versionString = version ? `tags/${version}` : 'latest';
 		if (!repo.match(/^(\w|\d|-)+\/(\w|\d|-)+$/g)) {
-			return new Response('this is not a valid repository');
+			return newError('this is not a valid repository', 404);
 		}
 		if (query === null || query.length === 0) {
-			return new Response("you didn't set a query");
+			return newError("you didn't set a query", 400);
 		}
-		const res = await fetch(`http://api.github.com/repos/${repo}/releases/latest`, { headers: { 'User-Agent': 'thrzl/latest 0.1.0' } });
+		const res = await fetch(`http://api.github.com/repos/${repo}/releases/${versionString}`, {
+			headers: { 'User-Agent': 'thrzl/latest 0.1.0' },
+		});
+		if (res.status === 404) {
+			return newError(`failed to find that release`, 404);
+		}
 		if (res.status !== 200) {
-			return new Response(`sum went wrong gangalang: ${res.statusText}`);
+			return newError(`sum went wrong gangalang: ${res.statusText}`, res.status);
 		}
 		const data: { assets: any[] } = await res.json();
 		const assets: MinimalAsset[] = data.assets.map((asset) => ({ name: asset.name, url: asset.browser_download_url }));
